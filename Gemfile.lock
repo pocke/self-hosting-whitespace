@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     akaza (0.2.0)
+    minitest (5.11.3)
     rake (12.3.2)
 
 PLATFORMS
@@ -9,6 +10,7 @@ PLATFORMS
 
 DEPENDENCIES
   akaza
+  minitest
   rake
 
 BUNDLED WITH
