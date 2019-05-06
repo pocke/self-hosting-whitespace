@@ -35,6 +35,8 @@ end
 # Run whitespace script on self-hosted interpreter
 namespace :run do
   WS_FILES.each do |ws_file|
+    next if ws_file.to_s.end_with?('whitespace.ws.rb')
+
     name = ws_file.basename('.ws.rb')
 
     desc "Compile src/#{ws_file.basename} to build/#{ws_file.basename('.rb')}"
@@ -50,4 +52,13 @@ namespace :run do
 
   desc "Run all programs"
   task all: WS_FILES.map { |w| w.basename('.ws.rb') }
+
+  desc 'Run self hosted hello world'
+  task selfhost: [:'compile:whitespace'] do
+    interpreter = ROOT_DIR.join('build/whitespace.ws').read
+    input = interpreter +
+      '$' +
+      "   \t\t \t   \n\t\n     \t\t  \t \t\n\t\n     \t\t \t\t  \n\t\n     \t\t \t\t  \n\t\n     \t\t \t\t\t\t\n\t\n  \n\n\n" # say hello
+    Akaza.eval(interpreter, input: StringIO.new(input))
+  end
 end
