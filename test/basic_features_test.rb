@@ -1,8 +1,6 @@
 require 'test_helper'
 
 class BasicFeaturesTest < Minitest::Test
-  VM_CODE = File.read(File.expand_path("../build/whitespace.ws", __dir__))
-
   def test_calc_add
     io = StringIO.new
 
@@ -109,12 +107,5 @@ class BasicFeaturesTest < Minitest::Test
 
   def eof(io)
     io.write('$')
-  end
-
-  def assert_ws(expected, input)
-    input.rewind
-    output = StringIO.new
-    Akaza.eval(VM_CODE, input: input, output: output)
-    assert_equal expected, output.string
   end
 end
