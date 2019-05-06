@@ -43,17 +43,17 @@ def parse
     ch = nextc
 
     if ch == SPACE
-      commands.unshift parse_stack
+      commands.push parse_stack
     elsif ch == NL
-      commands.unshift parse_flow
+      commands.push parse_flow
     elsif ch == TAB
       ch = nextc
       if ch == SPACE
-        commands.unshift parse_calc
+        commands.push parse_calc
       elsif ch == TAB
-        commands.unshift parse_heap
+        commands.push parse_heap
       elsif ch == NL
-        commands.unshift parse_io
+        commands.push parse_io
       else
         raise "err"
       end
@@ -244,7 +244,7 @@ def eval_ws(commands)
   stack = []
   heap = {}
   call_stack = []
-  index = commands.size - 1
+  index = 0
   labels = {}
 
   prepare_label(commands, labels)
@@ -254,75 +254,75 @@ def eval_ws(commands)
     c0 = c[0]
 
     if c0 == C_STACK_PUSH
-      stack.unshift c[1]
+      stack.push c[1]
     elsif c0 == C_STACK_DUP
-      stack.unshift stack[0]
+      stack.push stack[stack.size - 1]
     elsif c0 == C_STACK_SWAP
-      s1 = stack.shift
-      s2 = stack.shift
-      stack.unshift s1
-      stack.unshift s2
+      s1 = stack.pop
+      s2 = stack.pop
+      stack.push s1
+      stack.push s2
     elsif c0 == C_STACK_POP
-      stack.shift
+      stack.pop
     elsif c0 == C_CALC_ADD
-      r = stack.shift
-      l = stack.shift
-      stack.unshift(l + r)
+      r = stack.pop
+      l = stack.pop
+      stack.push(l + r)
     elsif c0 == C_CALC_SUB
-      r = stack.shift
-      l = stack.shift
-      stack.unshift(l - r)
+      r = stack.pop
+      l = stack.pop
+      stack.push(l - r)
     elsif c0 == C_CALC_MULTI
-      r = stack.shift
-      l = stack.shift
-      stack.unshift(l * r)
+      r = stack.pop
+      l = stack.pop
+      stack.push(l * r)
     elsif c0 == C_CALC_DIV
-      r = stack.shift
-      l = stack.shift
-      stack.unshift(l / r)
+      r = stack.pop
+      l = stack.pop
+      stack.push(l / r)
     elsif c0 == C_CALC_MOD
-      r = stack.shift
-      l = stack.shift
-      stack.unshift(l % r)
+      r = stack.pop
+      l = stack.pop
+      stack.push(l % r)
     elsif c0 == C_HEAP_SAVE
-      val = stack.shift
-      addr = stack.shift
+      val = stack.pop
+      addr = stack.pop
       heap[addr] = val
     elsif c0 == C_HEAP_LOAD
-      addr = stack.shift
+      addr = stack.pop
       val = heap[addr]
       raise "Heap uninitialized" unless val
-      stack.unshift val
+      stack.push val
     elsif c0 == C_FLOW_DEF
       # skip
     elsif c0 == C_FLOW_CALL
-      call_stack.unshift index
+      call_stack.push index
       index = labels[c[1]]
     elsif c0 == C_FLOW_JUMP
       index = labels[c[1]]
     elsif c0 == C_FLOW_JUMP_IF_ZERO
-      index = labels[c[1]] if stack.shift == 0
+      index = labels[c[1]] if stack.pop == 0
     elsif c0 == C_FLOW_JUMP_IF_NEG
-      index = labels[c[1]] if stack.shift < 0
+      index = labels[c[1]] if stack.pop < 0
     elsif c0 == C_FLOW_END
-      index = call_stack.shift
+      index = call_stack.pop
     elsif c0 == C_FLOW_EXIT
       exit
     elsif c0 == C_IO_WRITE_CH
-      put_as_char stack.shift
+      put_as_char stack.pop
     elsif c0 == C_IO_WRITE_NUM
-      put_as_number stack.shift
+      put_as_number stack.pop
     elsif c0 == C_IO_READ_CH
-      addr = stack.shift
+      addr = stack.pop
       heap[addr] = get_as_char
     elsif c0 == C_IO_READ_NUM
-      addr = stack.shift
+      addr = stack.pop
       heap[addr] = get_as_number
     else
       raise 'err'
     end
 
-    index = index - 1
+    index = index + 1
   end
 end
 
