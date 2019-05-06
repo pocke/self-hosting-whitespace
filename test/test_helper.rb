@@ -28,19 +28,48 @@ class WhitespaceIO
     @io = StringIO.new
   end
 
+  # stack
   def push_ch(ch)
-    num_to_ws(io, ch.ord)
+    push_num(ch.ord)
   end
 
   def push_num(n)
-    ws = n.to_s(2).gsub('1', "\t").gsub('0', ' ')
-    io.write "   #{ws}\n"
+    ws = n.abs.to_s(2).gsub('1', "\t").gsub('0', ' ')
+    sign = n < 0 ? "\t" : " "
+    io.write "  #{sign}#{ws}\n"
   end
 
+  def dup
+    io.write " \n "
+  end
+
+  def swap
+    io.write " \n\t"
+  end
+
+  def pop
+    io.write " \n\n"
+  end
+
+  # heap
+  def heap_save
+    io.write "\t\t "
+  end
+
+  def heap_load
+    io.write "\t\t\t"
+  end
+
+  # io
   def write_num
     io.write "\t\n \t"
   end
 
+  def write_ch
+    io.write "\t\n  "
+  end
+
+  # calc
   def add
     io.write "\t   "
   end
@@ -61,10 +90,36 @@ class WhitespaceIO
     io.write "\t \t\t"
   end
 
+  # flow
+  def def(label)
+    io.write("\n  #{label}\n")
+  end
+
+  def call(label)
+    io.write("\n \t#{label}\n")
+  end
+
+  def jump(label)
+    io.write("\n \n#{label}\n")
+  end
+
+  def jump_if_zero(label)
+    io.write("\n\t #{label}\n")
+  end
+
+  def jump_if_neg(label)
+    io.write("\n\t\t#{label}\n")
+  end
+
+  def end
+    io.write("\n\t\n")
+  end
+
   def exit
     io.write("\n\n\n")
   end
 
+  # others
   def eof
     io.write('$')
   end
