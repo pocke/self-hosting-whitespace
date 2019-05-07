@@ -40,19 +40,18 @@ def parse
   eof = false
 
   while !eof
-    ch = nextc
-
-    if ch == SPACE
+    case nextc
+    when SPACE
       commands.push parse_stack
-    elsif ch == NL
+    when NL
       commands.push parse_flow
-    elsif ch == TAB
-      ch = nextc
-      if ch == SPACE
+    when TAB
+      case nextc
+      when SPACE
         commands.push parse_calc
-      elsif ch == TAB
+      when TAB
         commands.push parse_heap
-      elsif ch == NL
+      when NL
         commands.push parse_io
       else
         raise "err"
@@ -66,17 +65,16 @@ def parse
 end
 
 def parse_stack
-  ch = nextc
-
-  if ch == SPACE
+  case nextc
+  when SPACE
     [C_STACK_PUSH, nextint]
-  elsif ch == NL
-    ch2 = nextc
-    if ch2 == SPACE
+  when NL
+    case nextc
+    when SPACE
       [C_STACK_DUP]
-    elsif ch2 == TAB
+    when TAB
       [C_STACK_SWAP]
-    elsif ch2 == NL
+    when NL
       [C_STACK_POP]
     else
       raise "err"
@@ -87,30 +85,31 @@ def parse_stack
 end
 
 def parse_flow
-  ch1 = nextc
-  ch2 = nextc
-  if ch1 == SPACE
-    if ch2 == SPACE
+  case nextc
+  when SPACE
+    case nextc
+    when SPACE
       [C_FLOW_DEF, nextlabel]
-    elsif ch2 == TAB
+    when TAB
       [C_FLOW_CALL, nextlabel]
-    elsif ch2 == NL
+    when NL
       [C_FLOW_JUMP, nextlabel]
     else
       raise 'err'
     end
-  elsif ch1 == TAB
-    if ch2 == SPACE
+  when TAB
+    case nextc
+    when SPACE
       [C_FLOW_JUMP_IF_ZERO, nextlabel]
-    elsif ch2 == TAB
+    when TAB
       [C_FLOW_JUMP_IF_NEG, nextlabel]
-    elsif ch2 == NL
+    when NL
       [C_FLOW_END]
     else
       raise 'err'
     end
-  elsif ch1 == NL
-    if ch2 == NL
+  when NL
+    if nextc == NL
       [C_FLOW_EXIT]
     else
       raise 'err'
@@ -121,22 +120,23 @@ def parse_flow
 end
 
 def parse_calc
-  ch1 = nextc
-  ch2 = nextc
-  if ch1 == SPACE
-    if ch2 == SPACE
+  case nextc
+  when SPACE
+    case nextc
+    when SPACE
       [C_CALC_ADD]
-    elsif ch2 == TAB
+    when TAB
       [C_CALC_SUB]
-    elsif ch2 == NL
+    when NL
       [C_CALC_MULTI]
     else
       raise "err"
     end
-  elsif ch1 == TAB
-    if ch2 == SPACE
+  when TAB
+    case nextc
+    when SPACE
       [C_CALC_DIV]
-    elsif ch2 == TAB
+    when TAB
       [C_CALC_MOD]
     else
       raise "err"
@@ -147,10 +147,10 @@ def parse_calc
 end
 
 def parse_heap
-  ch = nextc
-  if ch == SPACE
+  case nextc
+  when SPACE
     [C_HEAP_SAVE]
-  elsif ch == TAB
+  when TAB
     [C_HEAP_LOAD]
   else
     raise "err"
@@ -158,20 +158,21 @@ def parse_heap
 end
 
 def parse_io
-  ch1 = nextc
-  ch2 = nextc
-  if ch1 == SPACE
-    if ch2 == SPACE
+  case nextc
+  when SPACE
+    case nextc
+    when SPACE
       [C_IO_WRITE_CH]
-    elsif ch2 == TAB
+    when TAB
       [C_IO_WRITE_NUM]
     else
       raise "err"
     end
-  elsif ch1 == TAB
-    if ch2 == SPACE
+  when TAB
+    case nextc
+    when SPACE
       [C_IO_READ_CH]
-    elsif ch2 == TAB
+    when TAB
       [C_IO_READ_NUM]
     else
       raise "err"
@@ -182,14 +183,14 @@ def parse_io
 end
 
 def nextc
-  ch = get_as_char
-  if ch == SPACE
+  case ch = get_as_char
+  when SPACE
     ch
-  elsif ch == TAB
+  when TAB
     ch
-  elsif ch == NL
+  when NL
     ch
-  elsif ch == EOF
+  when EOF
     ch
   else
     nextc
@@ -200,9 +201,10 @@ def nextint
   sign = nextc
   int = 0
   while (ch = nextc) != NL
-    if ch == SPACE
+    case ch
+    when SPACE
       # plus 0
-    elsif ch == TAB
+    when TAB
       int = int + 1
     else
       raise "err"
@@ -251,71 +253,71 @@ def eval_ws(commands)
 
   while true
     c = commands[index]
-    c0 = c[0]
 
-    if c0 == C_STACK_PUSH
+    case c[0]
+    when C_STACK_PUSH
       stack.push c[1]
-    elsif c0 == C_STACK_DUP
+    when C_STACK_DUP
       stack.push stack[stack.size - 1]
-    elsif c0 == C_STACK_SWAP
+    when C_STACK_SWAP
       s1 = stack.pop
       s2 = stack.pop
       stack.push s1
       stack.push s2
-    elsif c0 == C_STACK_POP
+    when C_STACK_POP
       stack.pop
-    elsif c0 == C_CALC_ADD
+    when C_CALC_ADD
       r = stack.pop
       l = stack.pop
       stack.push(l + r)
-    elsif c0 == C_CALC_SUB
+    when C_CALC_SUB
       r = stack.pop
       l = stack.pop
       stack.push(l - r)
-    elsif c0 == C_CALC_MULTI
+    when C_CALC_MULTI
       r = stack.pop
       l = stack.pop
       stack.push(l * r)
-    elsif c0 == C_CALC_DIV
+    when C_CALC_DIV
       r = stack.pop
       l = stack.pop
       stack.push(l / r)
-    elsif c0 == C_CALC_MOD
+    when C_CALC_MOD
       r = stack.pop
       l = stack.pop
       stack.push(l % r)
-    elsif c0 == C_HEAP_SAVE
+    when C_HEAP_SAVE
       val = stack.pop
       addr = stack.pop
       heap[addr] = val
-    elsif c0 == C_HEAP_LOAD
+    when C_HEAP_LOAD
       addr = stack.pop
       val = heap[addr]
       raise "Heap uninitialized" unless val
       stack.push val
-    elsif c0 == C_FLOW_DEF
+    when C_FLOW_DEF
       # skip
-    elsif c0 == C_FLOW_CALL
+    when C_FLOW_CALL
       call_stack.push index
       index = labels[c[1]]
-    elsif c0 == C_FLOW_JUMP
+    when C_FLOW_JUMP
       index = labels[c[1]]
-    elsif c0 == C_FLOW_JUMP_IF_ZERO
+    when C_FLOW_JUMP_IF_ZERO
       index = labels[c[1]] if stack.pop == 0
-    elsif c0 == C_FLOW_JUMP_IF_NEG
+    when C_FLOW_JUMP_IF_NEG
       index = labels[c[1]] if stack.pop < 0
-    elsif c0 == C_FLOW_END
+    when C_FLOW_END
       index = call_stack.pop
-    elsif c0 == C_FLOW_EXIT
+    when C_FLOW_EXIT
       exit
-    elsif c0 == C_IO_WRITE_CH
+    when C_IO_WRITE_CH
       put_as_char stack.pop
-    elsif c0 == C_IO_WRITE_NUM
+    when C_IO_WRITE_NUM
       put_as_number stack.pop
-    elsif c0 == C_IO_READ_CH
+    when C_IO_READ_CH
       addr = stack.pop
       heap[addr] = get_as_char
-    elsif c0 == C_IO_READ_NUM
+    when C_IO_READ_NUM
       addr = stack.pop
       heap[addr] = get_as_number
     else
