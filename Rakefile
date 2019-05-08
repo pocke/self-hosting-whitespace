@@ -58,7 +58,8 @@ namespace :run do
     interpreter = ROOT_DIR.join('build/whitespace.ws').read
     input = interpreter +
       '$' +
-      "   \t\t \t   \n\t\n     \t\t  \t \t\n\t\n     \t\t \t\t  \n\t\n     \t\t \t\t  \n\t\n     \t\t \t\t\t\t\n\t\n  \n\n\n" # say hello
+      "   \t\t \t   \n\t\n     \t\t  \t \t\n\t\n     \t\t \t\t  \n\t\n     \t\t \t\t  \n\t\n     \t\t \t\t\t\t\n\t\n  \n\n\n" + # say hello
+      '$'
     Akaza.eval(interpreter, input: StringIO.new(input))
   end
 end
