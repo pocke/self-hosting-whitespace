@@ -184,13 +184,7 @@ end
 
 def nextc
   case ch = get_as_char
-  when SPACE
-    ch
-  when TAB
-    ch
-  when NL
-    ch
-  when EOF
+  when SPACE, TAB, NL, EOF
     ch
   else
     nextc
