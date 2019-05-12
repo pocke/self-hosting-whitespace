@@ -32,6 +32,8 @@ C_IO_WRITE_NUM      = 20
 C_IO_READ_CH        = 21
 C_IO_READ_NUM       = 22
 
+C_OPT_HEAP_LOAD_ADDR = 100
+
 
 # Parser
 
@@ -42,17 +44,17 @@ def parse
   while !eof
     case nextc
     when SPACE
-      commands.push parse_stack
+      parse_stack(commands)
     when NL
-      commands.push parse_flow
+      parse_flow(commands)
     when TAB
       case nextc
       when SPACE
-        commands.push parse_calc
+        parse_calc(commands)
       when TAB
-        commands.push parse_heap
+        parse_heap(commands)
       when NL
-        commands.push parse_io
+        parse_io(commands)
       else
         raise "err"
       end
@@ -64,18 +66,24 @@ def parse
   commands
 end
 
-def parse_stack
+def parse_stack(commands)
   case nextc
   when SPACE
-    [C_STACK_PUSH, nextint]
+    commands.push [C_STACK_PUSH, nextint]
   when NL
     case nextc
     when SPACE
-      [C_STACK_DUP]
+      commands.push [C_STACK_DUP]
     when TAB
-      [C_STACK_SWAP]
+      commands.push [C_STACK_SWAP]
     when NL
-      [C_STACK_POP]
+      last_idx = commands.size - 1
+      case commands[last_idx][0]
+      when C_STACK_PUSH, C_OPT_HEAP_LOAD_ADDR
+        commands.pop
+      else
+        commands.push [C_STACK_POP]
+      end
     else
       raise "err"
     end
@@ -84,8 +92,8 @@ def parse_stack
   end
 end
 
-def parse_flow
-  case nextc
+def parse_flow(commands)
+  commands.push(case nextc
   when SPACE
     case nextc
     when SPACE
@@ -116,11 +124,11 @@ def parse_flow
     end
   else
     raise 'err'
-  end
+  end)
 end
 
-def parse_calc
-  case nextc
+def parse_calc(commands)
+  commands.push(case nextc
   when SPACE
     case nextc
     when SPACE
@@ -143,22 +151,27 @@ def parse_calc
     end
   else
     raise "err"
-  end
+  end)
 end
 
-def parse_heap
+def parse_heap(commands)
   case nextc
   when SPACE
-    [C_HEAP_SAVE]
+    commands.push [C_HEAP_SAVE]
   when TAB
-    [C_HEAP_LOAD]
+    last_idx = commands.size - 1
+    if commands[last_idx][0] == C_STACK_PUSH
+      commands[last_idx][0] = C_OPT_HEAP_LOAD_ADDR
+    else
+      commands.push [C_HEAP_LOAD]
+    end
   else
     raise "err"
   end
 end
 
-def parse_io
-  case nextc
+def parse_io(commands)
+  commands.push(case nextc
   when SPACE
     case nextc
     when SPACE
@@ -179,7 +192,7 @@ def parse_io
     end
   else
     raise "err"
-  end
+  end)
 end
 
 def nextc
@@ -249,6 +262,10 @@ def eval_ws(commands)
     c = commands[index]
 
     case c[0]
+    when C_OPT_HEAP_LOAD_ADDR
+      val = heap[c[1]]
+      raise "Heap uninitialized" unless val
+      stack.push val
     when C_STACK_PUSH
       stack.push c[1]
     when C_STACK_DUP
